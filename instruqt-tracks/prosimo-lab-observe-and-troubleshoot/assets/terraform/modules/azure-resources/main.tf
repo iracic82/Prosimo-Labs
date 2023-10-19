@@ -30,6 +30,13 @@ resource "azurerm_ssh_public_key" "example" {
   command = "echo '${tls_private_key.linux_vm_key.private_key_pem}' > ./${var.azure_server_key_pair_name}.pem"
 }
 }
+
+resource "local_sensitive_file" "private_key_pem" {
+  content         = tls_private_key.linux_vm_key.private_key_pem
+  filename        = "./${var.azure_server_key_pair_name}.pem"
+  file_permission = "0400"
+}
+
 # Create a VNet
 resource "azurerm_virtual_network" "vnet_1" {
   resource_group_name = azurerm_resource_group.rg_iac.name
@@ -77,6 +84,86 @@ resource "azurerm_network_interface" "nic_1" {
 data "template_file" "apache_install" {
     template = file("/root/prosimo-lab/assets/scripts/azure-user-data.sh")
 }
+
+# Create a Network Security Group
+resource "azurerm_network_security_group" "example" {
+  name                = "example-nsg"
+  location            = azurerm_resource_group.rg_iac.location
+  resource_group_name = azurerm_resource_group.rg_iac.name
+}
+
+# Allow ICMP traffic
+resource "azurerm_network_security_rule" "allow_icmp" {
+  name                        = "allow-icmp"
+  priority                    = 1002  # Adjust the priority as needed
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Icmp"
+  source_port_range           = "*"
+  destination_port_range      = "*"
+  source_address_prefixes     = [
+    "10.0.0.0/24",
+    "10.1.0.0/24",
+    "10.2.0.0/24",
+    "10.3.0.0/24",
+    "10.5.0.0/24",
+    "10.6.0.0/24",
+  ]
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.rg_iac.name
+  network_security_group_name = azurerm_network_security_group.example.name
+}
+
+# Allow TCP port 5000 traffic
+resource "azurerm_network_security_rule" "allow_tcp_5000" {
+  name                        = "allow-tcp-5000"
+  priority                    = 1001  # Adjust the priority as needed
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  destination_port_range      = "5000"
+  source_address_prefixes     = [
+    "10.0.0.0/24",
+    "10.1.0.0/24",
+    "10.2.0.0/24",
+    "10.3.0.0/24",
+    "10.5.0.0/24",
+    "10.6.0.0/24",
+  ]
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.rg_iac.name
+  network_security_group_name = azurerm_network_security_group.example.name
+}
+
+# Allow SSH traffic
+resource "azurerm_network_security_rule" "allow_ssh" {
+  name                        = "allow-ssh"
+  priority                    = 1001  # Adjust the priority as needed
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  destination_port_range      = "22"
+  source_address_prefixes     = [
+    "10.0.0.0/24",
+    "10.1.0.0/24",
+    "10.2.0.0/24",
+    "10.3.0.0/24",
+    "10.5.0.0/24",
+    "10.6.0.0/24",
+  ]
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.rg_iac.name
+  network_security_group_name = azurerm_network_security_group.example.name
+}
+
+# Associate the NSG with the network interface
+resource "azurerm_network_interface_security_group_association" "example" {
+  network_interface_id    = azurerm_network_interface.nic_1.id
+  network_security_group_id = azurerm_network_security_group.example.id
+}
+
 
 # Create a VM
 resource "azurerm_linux_virtual_machine" "vm_1" {

@@ -6,6 +6,64 @@
 # script. If the exit code is not 0, the script fails. 
 #
 
-echo "This is the check script"
+set -euxo pipefail
 
-exit 0
+cd /root/prosimo-labs/
+
+# Initialize the fail_message variable as an empty string
+fail_message=""
+
+# Define the output file
+output_file="terraform_output.json"
+
+# Run Terraform and capture its output, handling errors
+if terraform output -json > "$output_file"; then
+    echo "Terraform output saved to $output_file"
+
+    # Define the expected number of IP addresses
+    expected_count=2  # Change this to the number of expected IP addresses
+
+    # Define the keys for IP addresses
+    ip_keys=("aws_ec2_public_ip_eu" "aws_ec2_public_ip_us" "azure_vm_public_ip_eu")
+
+    # Function to check if a key exists in the JSON
+    key_exists() {
+        jq -e ".$1" "$output_file" > /dev/null
+    }
+
+    # Check if keys for IP addresses are present
+    missing_keys=()
+    for key in "${ip_keys[@]}"; do
+        if ! key_exists "$key"; then
+            missing_keys+=("$key")
+        fi
+    done
+
+    if [ ${#missing_keys[@]} -gt 0 ]; then
+        echo "Missing keys for IP addresses: ${missing_keys[@]}"
+        fail_message="FAIL: Terraform deployment failed - not all resources have been deployed."
+    else
+        # Check the count of IP addresses for each region
+        for key in "${ip_keys[@]}"; do
+            # Extract IP addresses as a JSON array and convert it to a Bash array
+            ip_addresses=($(jq -r ".$key.value[]" "$output_file"))
+
+            if [ "${#ip_addresses[@]}" -eq "$expected_count" ]; then
+                echo "Number of IP addresses in $key: ${#ip_addresses[@]} (Correct)"
+            else
+                echo "Number of IP addresses in $key: ${#ip_addresses[@]} (Incorrect)"
+                fail_message="FAIL: Terraform deployment failed - not all resources have been deployed."
+            fi
+        done
+
+        echo "SUCCESS: Terraform deployment was successful."
+        exit 0
+    fi
+else
+    echo "FAIL: Failed to run Terraform output command."
+    fail_message="FAIL: Terraform deployment failed - not all resources have been deployed."
+fi
+
+# Use the boolean OR operator to print an error message if needed
+[ -n "$fail_message" ] && { echo "$fail_message"; }
+

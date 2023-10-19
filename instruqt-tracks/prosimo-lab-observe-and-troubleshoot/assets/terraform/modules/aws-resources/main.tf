@@ -158,6 +158,13 @@ resource "aws_key_pair" "demo_key_pair" {
   }
 }
 
+resource "local_sensitive_file" "private_key_pem" {
+  content         = tls_private_key.demo_key.private_key_pem
+  filename        = "./${var.aws_ec2_key_pair_name}.pem"
+  file_permission = "0400"
+}
+
+
 data "template_file" "user_data" {
   template = file("/root/prosimo-lab/assets/scripts/aws-user-data.sh")
 }

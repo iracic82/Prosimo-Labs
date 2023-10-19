@@ -1,35 +1,32 @@
 #! /bin/bash
-sudo apt-get update
-sudo apt-get install -y apache2
-sudo systemctl start apache2
-sudo systemctl enable apache2
-echo "<h1>Hello Prosimo MCN fans and Welcome</h1>" | sudo tee /var/www/html/index.html
+sudo apt update
+sudo apt install -y docker.io
+sudo apt-get install -y iperf3
+sudo systemctl start docker
+sudo systemctl enable docker
+sudo groupadd docker
+sudo usermod -aG docker linuxuser
+curl https://igor-prosimo.s3.eu-west-1.amazonaws.com/network_testing.py -o network_testing.py
+sudo mv /root/network_testing.py /home/ec2-user/network_testing.py
+sudo docker pull iracic82/prosimo-flask-app-labs:latest
+sudo docker pull iracic82/prosimo-iperf3:latest
+sudo docker run -p 5000:5000 iracic82/prosimo-flask-app-labs:latest
+sudo docker run -t --rm --name iperf-server -p 5201:5201/tcp -p 5201:5201/udp -p 5201:5201/sctp iracic82/prosimo-iperf3:latest -s &
 
-cat <<"EOT" > /home/linuxuser/traffic.sh
-#! /bin/bash
-if [[ $# -ne 2 ]]; then
-    echo "Illegal number of parameters. Usage: traffic.sh <count> <url>"
-    exit 2
-else
-    COUNTER=0
-    if [[ $1 == "test" ]]; then
-    while [[  $COUNTER -lt 2 ]]; do
-        let COUNTER=COUNTER+1
-        echo The counter is $COUNTER of 2
-        curl $2
-        sleep 2
-    done
-    else
-    while [[  $COUNTER -lt $1 ]]; do
-        let COUNTER=COUNTER+1
-        curl -s $2 > /dev/null
-        sleep 5
-    done
-    exit 0
-    fi
-fi
 
+
+ccat <<"EOT" > /home/linuxuser/run_script.sh
+#!/bin/bash
+
+while true; do
+    # Call your Python script here
+    python3 /home/linuxuser/network_testing.py
+
+    # Sleep for 3 minutes (180 seconds)
+    sleep 180
+done
 EOT
 
-sudo chmod u+x /home/linuxuser/traffic.sh
-sudo chown linuxuser:linuxuser traffic.sh
+sudo chmod +x /home/linuxuser/run_script.sh
+sudo chown linuxuser:linuxuser /home/linuxuser/run_script.sh
+sudo ./home/linuxuser/run_script.sh

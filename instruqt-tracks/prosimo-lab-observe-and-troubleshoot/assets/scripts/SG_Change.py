@@ -1,14 +1,19 @@
-#!/usr/local/bin/python3
+#!/usr/bin/python3
 import boto3
+import logging
+from botocore.exceptions import ClientError
 
+# Initialize logging
+logging.basicConfig(level=logging.INFO)
 
-def modify_ssh_port(security_group_name, region):
+def modify_security_group(security_group_name, region, cidr_blocks):
     """
-    Modify the SSH port from 22 to 24 in existing AWS Security Groups identified by the same name.
+    Revoke inbound HTTP on port 80 for specific CIDR blocks and allow only ICMP outbound in existing AWS Security Groups.
 
     Parameters:
-        security_group_name (str): The name of the security groups to modify.
-        region (str): The AWS region where the security groups are located.
+        security_group_name (str): The name of the Security Group to modify.
+        region (str): The AWS region where the Security Group resides.
+        cidr_blocks (list): List of CIDR blocks for which to revoke inbound HTTP access.
     """
 
     ec2 = boto3.client('ec2', region_name=region)
@@ -24,111 +29,61 @@ def modify_ssh_port(security_group_name, region):
         for sg in response['SecurityGroups']:
             security_group_id = sg['GroupId']
 
-            # Revoke the existing SSH inbound rule for port 22
-            ec2.revoke_security_group_ingress(
-                GroupId=security_group_id,
-                IpProtocol='tcp',
-                FromPort=22,
-                ToPort=22,
-                CidrIp='0.0.0.0/0'  # Assumes the rule allows all IPs; modify as needed
-            )
+            # Revoke existing inbound HTTP rule for port 80 for each CIDR block
+            for cidr in cidr_blocks:
+                http_rule_for_cidr_exists = any(
+                    rule['FromPort'] == 80 and rule['ToPort'] == 80 and
+                    any(ip_range['CidrIp'] == cidr for ip_range in rule['IpRanges'])
+                    for rule in sg['IpPermissions']
+                )
 
-            print(
-                f"Successfully revoked SSH rule for port 22 in Security Group {security_group_name} (ID: {security_group_id}) in region {region}.")
+                if http_rule_for_cidr_exists:
+                    try:
+                        ec2.revoke_security_group_ingress(
+                            GroupId=security_group_id,
+                            IpPermissions=[
+                                {'IpProtocol': 'tcp', 'FromPort': 80, 'ToPort': 80, 'IpRanges': [{'CidrIp': cidr}]}
+                            ]
+                        )
+                        logging.info(f"Revoked inbound HTTP rule for port 80 for CIDR {cidr} in Security Group {security_group_name} (ID: {security_group_id}).")
+                    except ClientError as e:
+                        logging.warning(f"Failed to revoke inbound HTTP rule for port 80 for CIDR {cidr}: {e}")
 
-            # Authorize a new SSH inbound rule for port 24
-            ec2.authorize_security_group_ingress(
-                GroupId=security_group_id,
-                IpProtocol='tcp',
-                FromPort=24,
-                ToPort=24,
-                CidrIp='0.0.0.0/0'  # Assumes the rule allows all IPs; modify as needed
-            )
+            # Revoke all existing outbound rules
+            try:
+                if sg.get('IpPermissionsEgress'):
+                    ec2.revoke_security_group_egress(
+                        GroupId=security_group_id,
+                        IpPermissions=sg['IpPermissionsEgress']
+                    )
+                logging.info(f"Revoked all outbound rules in Security Group {security_group_name} (ID: {security_group_id}).")
+            except ClientError as e:
+                logging.warning(f"Failed to revoke outbound rules: {e}")
 
-            print(
-                f"Successfully authorized SSH rule for port 24 in Security Group {security_group_name} (ID: {security_group_id}) in region {region}.")
+            # Authorize outbound ICMP
+            try:
+                ec2.authorize_security_group_egress(
+                    GroupId=security_group_id,
+                    IpPermissions=[
+                        {'IpProtocol': 'icmp', 'FromPort': -1, 'ToPort': -1, 'IpRanges': [{'CidrIp': '0.0.0.0/0'}]}
+                    ]
+                )
+                logging.info(f"Authorized outbound ICMP in Security Group {security_group_name} (ID: {security_group_id}).")
+            except ClientError as e:
+                logging.warning(f"Failed to authorize outbound ICMP: {e}")
 
-    except Exception as e:
-        print(f"An error occurred while modifying the SSH rules in region {region}: {e}")
-
-
-if __name__ == "__main__":
-    security_group_name = "sc_allow_ssh"  # Replace with your Security Group name
-    region = "eu-west-1"  # Replace with the AWS region where the security group is located
-    modify_ssh_port(security_group_name, region)
-
-
------------
-
-import boto3
-
-
-def modify_ssh_port(security_group_name, region):
-    """
-    Modify the SSH port from 22 to 24 in existing AWS Security Groups identified by the same name, while keeping the rule description intact.
-
-    Parameters:
-        security_group_name (str): The name of the security groups to modify.
-        region (str): The AWS region where the security groups are located.
-    """
-
-    ec2 = boto3.client('ec2', region_name=region)
-
-    try:
-        # Fetch the security groups by their name
-        response = ec2.describe_security_groups(
-            Filters=[
-                {'Name': 'group-name', 'Values': [security_group_name]}
-            ]
-        )
-
-        for sg in response['SecurityGroups']:
-            security_group_id = sg['GroupId']
-
-            # Capture the existing rule's description
-            existing_description = None
-            for rule in sg['IpPermissions']:
-                if rule['FromPort'] == 22 and rule['ToPort'] == 22:
-                    existing_description = rule.get('IpRanges', [{}])[0].get('Description', '')
-                    break
-
-            # Revoke the existing SSH inbound rule for port 22
-            ec2.revoke_security_group_ingress(
-                GroupId=security_group_id,
-                IpPermissions=[
-                    {
-                        'IpProtocol': 'tcp',
-                        'FromPort': 22,
-                        'ToPort': 22,
-                        'IpRanges': [{'CidrIp': '0.0.0.0/0'}]
-                    }
-                ]
-            )
-
-            print(
-                f"Successfully revoked SSH rule for port 22 in Security Group {security_group_name} (ID: {security_group_id}) in region {region}.")
-
-            # Authorize a new SSH inbound rule for port 24
-            ec2.authorize_security_group_ingress(
-                GroupId=security_group_id,
-                IpPermissions=[
-                    {
-                        'IpProtocol': 'tcp',
-                        'FromPort': 24,
-                        'ToPort': 24,
-                        'IpRanges': [{'CidrIp': '0.0.0.0/0', 'Description': existing_description}]
-                    }
-                ]
-            )
-
-            print(
-                f"Successfully authorized SSH rule for port 24 in Security Group {security_group_name} (ID: {security_group_id}) in region {region}.")
-
-    except Exception as e:
-        print(f"An error occurred while modifying the SSH rules in region {region}: {e}")
-
+    except ClientError as e:
+        logging.error(f"An error occurred: {e}")
 
 if __name__ == "__main__":
-    security_group_name = "sc_allow_ssh"  # Replace with your Security Group name
-    region = "eu-west-1"  # Replace with the AWS region where the security group is located
-    modify_ssh_port(security_group_name, region)
+    security_group_name = "sc_allow_ssh"
+    region = "us-east-1"
+    cidr_blocks = [
+        "10.0.0.0/24",
+        "10.1.0.0/24",
+        "10.2.0.0/24",
+        "10.3.0.0/24",
+        "10.5.0.0/24",
+        "10.6.0.0/24"
+    ]
+    modify_security_group(security_group_name, region, cidr_blocks)

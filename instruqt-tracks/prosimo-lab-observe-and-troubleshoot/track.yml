@@ -6,11 +6,11 @@ description: |-
   A long description of the track.
 
   You can use any GitHub flavoured markdown.
-icon: https://storage.googleapis.com/instruqt-frontend/img/tracks/default.png
+icon: https://play.instruqt.com/assets/tracks/0ptpizi0pcp5/5d633dcaf239b6ab5bcad11ccae81cf9/assets/prosimo.png
 tags: []
 owner: prosimo
 developers:
-- nathan@prosimo.io
+- igor@prosimo.io
 lab_config:
   overlay: false
   width: 33
