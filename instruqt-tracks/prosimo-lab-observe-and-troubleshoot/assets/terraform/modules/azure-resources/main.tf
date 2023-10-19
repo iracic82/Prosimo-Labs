@@ -173,14 +173,14 @@ resource "azurerm_network_security_rule" "allow_tcp_5000" {
 
   # Allow TCP port 5201 traffic
 resource "azurerm_network_security_rule" "allow_tcp_5201" {
-  name                        = "allow-tcp-5201"
-  priority                    = 1005  # Adjust the priority as needed
-  direction                   = "Inbound"
-  access                      = "Allow"
-  protocol                    = "Tcp"
-  source_port_range           = "*"
-  destination_port_range      = "5201"
-  source_address_prefixes     = [
+  name                    = "allow-tcp-5201"
+  priority                = 1005  # Adjust the priority as needed
+  direction               = "Inbound"
+  access                  = "Allow"
+  protocol                = "Tcp"
+  source_port_range       = "*"
+  destination_port_range  = "5201"
+  source_address_prefixes = [
     "10.0.0.0/24",
     "10.1.0.0/24",
     "10.2.0.0/24",
@@ -188,6 +188,7 @@ resource "azurerm_network_security_rule" "allow_tcp_5201" {
     "10.5.0.0/24",
     "10.6.0.0/24",
   ]
+}
 
 # Associate the NSG with the network interface
 resource "azurerm_network_interface_security_group_association" "example" {
