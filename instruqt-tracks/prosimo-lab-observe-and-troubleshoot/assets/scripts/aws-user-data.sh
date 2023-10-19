@@ -24,6 +24,6 @@ EOT
 
 sudo chmod +x /home/ec2-user/run_script.sh
 sudo chown ec2-user:ec2-user /home/ec2-user/run_script.sh
-sudo ./home/ec2-user/run_script.sh
+sudo /home/ec2-user/run_script.sh
 
 
