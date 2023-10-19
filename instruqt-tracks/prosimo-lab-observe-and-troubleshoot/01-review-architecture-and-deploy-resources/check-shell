@@ -1,69 +1,68 @@
-#!/bin/sh
-#
-# This script runs when the platform check the challenge.
-#
-# The platform determines if the script was successful using the exit code of this
-# script. If the exit code is not 0, the script fails. 
-#
+#!/bin/bash
 
-set -euxo pipefail
+# Define a function to check Terraform deployment
+check_terraform_deployment() {
+    set -euxo pipefail
 
-cd /root/prosimo-labs/
+    cd /root/prosimo-lab/assets/terraform/
 
-# Initialize the fail_message variable as an empty string
-fail_message=""
+    # Initialize the fail_message variable as an empty string
+    fail_message=""
 
-# Define the output file
-output_file="terraform_output.json"
+    # Define the output file
+    output_file="terraform_output.json"
 
-# Run Terraform and capture its output, handling errors
-if terraform output -json > "$output_file"; then
-    echo "Terraform output saved to $output_file"
+    # Run Terraform and capture its output, handling errors
+    if terraform output -json > "$output_file"; then
+        echo "Terraform output saved to $output_file"
 
-    # Define the expected number of IP addresses
-    expected_count=2  # Change this to the number of expected IP addresses
+        # Define the expected number of SSH access entries
+        expected_count=2  # Change this to the number of expected entries
 
-    # Define the keys for IP addresses
-    ip_keys=("aws_ec2_public_ip_eu" "aws_ec2_public_ip_us" "azure_vm_public_ip_eu")
+        # Define the keys for SSH access entries
+        ssh_keys=("ssh_access_aws_eu" "ssh_access_aws_us" "ssh_access_azure_eu")
 
-    # Function to check if a key exists in the JSON
-    key_exists() {
-        jq -e ".$1" "$output_file" > /dev/null
-    }
+        # Function to check if an SSH access entry exists in the list
+        ssh_access_entry_exists() {
+            local entry="$1"
+            for item in "${ssh_access_list[@]}"; do
+                if [ "$item" = "$entry" ]; then
+                    return 0  # Entry found
+                fi
+            done
+            return 1  # Entry not found
+        }
 
-    # Check if keys for IP addresses are present
-    missing_keys=()
-    for key in "${ip_keys[@]}"; do
-        if ! key_exists "$key"; then
-            missing_keys+=("$key")
-        fi
-    done
+        # Analyze SSH access entries
+        analyze_ssh_access() {
+            local ssh_key="$1"
+            local ssh_access_json=$(jq -r ".$ssh_key.value[]" "$output_file")
+            local ssh_access_list=()
 
-    if [ ${#missing_keys[@]} -gt 0 ]; then
-        echo "Missing keys for IP addresses: ${missing_keys[@]}"
-        fail_message="FAIL: Terraform deployment failed - not all resources have been deployed."
-    else
-        # Check the count of IP addresses for each region
-        for key in "${ip_keys[@]}"; do
-            # Extract IP addresses as a JSON array and convert it to a Bash array
-            ip_addresses=($(jq -r ".$key.value[]" "$output_file"))
+            # Split JSON string into separate entries by "=" sign
+            IFS="=" read -ra ssh_access_list <<< "$ssh_access_json"
 
-            if [ "${#ip_addresses[@]}" -eq "$expected_count" ]; then
-                echo "Number of IP addresses in $key: ${#ip_addresses[@]} (Correct)"
+            if [ "${#ssh_access_list[@]}" -eq "$expected_count" ]; then
+                echo "Number of SSH access entries in $ssh_key: ${#ssh_access_list[@]} (Correct)"
             else
-                echo "Number of IP addresses in $key: ${#ip_addresses[@]} (Incorrect)"
-                fail_message="FAIL: Terraform deployment failed - not all resources have been deployed."
+                echo "Number of SSH access entries in $ssh_key: ${#ssh_access_list[@]} (Incorrect)"
+                fail_message="FAIL: Terraform deployment failed - incorrect number of SSH access entries in $ssh_key."
             fi
+        }
+
+        # Analyze SSH access entries for each region
+        for ssh_key in "${ssh_keys[@]}"; do
+            analyze_ssh_access "$ssh_key"
         done
 
-        echo "SUCCESS: Terraform deployment was successful."
-        exit 0
+    else
+        echo "FAIL: Failed to run Terraform output command."
+        fail_message="FAIL: Terraform deployment failed - not all resources have been deployed."
     fi
-else
-    echo "FAIL: Failed to run Terraform output command."
-    fail_message="FAIL: Terraform deployment failed - not all resources have been deployed."
-fi
 
-# Use the boolean OR operator to print an error message if needed
-[ -n "$fail_message" ] && { echo "$fail_message"; }
+    # Use the boolean OR operator to print an error message if needed
+    [ -n "$fail_message" ] && { echo "$fail_message"; }
+}
 
+# Call the function to check Terraform deployment
+check_terraform_deployment
