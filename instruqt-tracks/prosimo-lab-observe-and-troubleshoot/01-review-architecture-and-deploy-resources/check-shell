@@ -52,7 +52,7 @@ check_terraform_deployment() {
                 echo "Number of SSH access entries in $ssh_key: ${#ssh_access_list[@]} (Correct)"
             else
                 echo "Number of SSH access entries in $ssh_key: ${#ssh_access_list[@]} (Incorrect)"
-                fail_message="FAIL: Terraform deployment failed - incorrect number of SSH access entries in $ssh_key."
+                fail_message="FAIL: Terraform deployment failed - not all resources have been deployed."
             fi
         }
 
