@@ -4,7 +4,7 @@ sudo yum install -y docker
 sudo yum install -y iperf3
 sudo service docker start
 sudo usermod -a -G docker ec2-user
-curl https://igor-prosimo.s3.eu-west-1.amazonaws.com/network_testing.py -o network_testing.py
+sudo curl https://igor-prosimo.s3.eu-west-1.amazonaws.com/network_testing.py -o network_testing.py
 sudo mv /root/network_testing.py /home/ec2-user/network_testing.py
 sudo docker pull iracic82/prosimo-flask-app-labs:latest
 sudo docker pull iracic82/prosimo-iperf3:latest
