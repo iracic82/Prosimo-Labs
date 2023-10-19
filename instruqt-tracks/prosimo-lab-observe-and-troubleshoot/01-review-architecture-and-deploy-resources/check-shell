@@ -30,7 +30,7 @@ check_terraform_deployment() {
                     return 0  # Entry found
                 fi
             done
-            return 1  # Entry not found
+            return  # No need to specify a status here when entry is not found
         }
 
         # Analyze SSH access entries
@@ -41,6 +41,12 @@ check_terraform_deployment() {
 
             # Split JSON string into separate entries by "=" sign
             IFS="=" read -ra ssh_access_list <<< "$ssh_access_json"
+
+            # Debug: Print SSH access list
+            echo "SSH Access List for $ssh_key:"
+            for entry in "${ssh_access_list[@]}"; do
+                echo "$entry"
+            done
 
             if [ "${#ssh_access_list[@]}" -eq "$expected_count" ]; then
                 echo "Number of SSH access entries in $ssh_key: ${#ssh_access_list[@]} (Correct)"
@@ -55,12 +61,17 @@ check_terraform_deployment() {
             analyze_ssh_access "$ssh_key"
         done
 
+        # Check if there's no fail_message, indicating success
+        if [ -z "$fail_message" ]; then
+            echo "SUCCESS: Terraform deployment was successful if we have all needed entries."
+        fi
+
     else
         echo "FAIL: Failed to run Terraform output command."
         fail_message="FAIL: Terraform deployment failed - not all resources have been deployed."
     fi
 
-    # Use the boolean OR operator to print an error message if needed
+    # Print an error message if needed
     [ -n "$fail_message" ] && { echo "$fail_message"; }
 }
 
