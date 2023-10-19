@@ -139,12 +139,25 @@ resource "azurerm_network_security_rule" "allow_tcp_5000" {
 # Allow SSH traffic
 resource "azurerm_network_security_rule" "allow_ssh" {
   name                        = "allow-ssh"
-  priority                    = 1001  # Adjust the priority as needed
+  priority                    = 1003  # Adjust the priority as needed
   direction                   = "Inbound"
   access                      = "Allow"
   protocol                    = "Tcp"
   source_port_range           = "*"
   destination_port_range      = "22"
+  source_address_prefixes     = [
+    "0.0.0.0/0",
+  ]
+
+  # Allow UDP port 5201 traffic
+resource "azurerm_network_security_rule" "allow_tcp_5000" {
+  name                        = "allow-udp-5201"
+  priority                    = 1004  # Adjust the priority as needed
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Udp"
+  source_port_range           = "*"
+  destination_port_range      = "5201"
   source_address_prefixes     = [
     "10.0.0.0/24",
     "10.1.0.0/24",
@@ -157,6 +170,24 @@ resource "azurerm_network_security_rule" "allow_ssh" {
   resource_group_name         = azurerm_resource_group.rg_iac.name
   network_security_group_name = azurerm_network_security_group.example.name
 }
+
+  # Allow TCP port 5201 traffic
+resource "azurerm_network_security_rule" "allow_tcp_5201" {
+  name                        = "allow-tcp-5201"
+  priority                    = 1005  # Adjust the priority as needed
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  destination_port_range      = "5201"
+  source_address_prefixes     = [
+    "10.0.0.0/24",
+    "10.1.0.0/24",
+    "10.2.0.0/24",
+    "10.3.0.0/24",
+    "10.5.0.0/24",
+    "10.6.0.0/24",
+  ]
 
 # Associate the NSG with the network interface
 resource "azurerm_network_interface_security_group_association" "example" {
