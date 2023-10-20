@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.INFO)
 
 def modify_security_group(security_group_name, region, cidr_blocks):
     """
-    Revoke inbound HTTP on port 80 for specific CIDR blocks and allow only ICMP outbound in existing AWS Security Groups.
+    Revoke inbound HTTP on port 5000 for specific CIDR blocks and allow only ICMP outbound in existing AWS Security Groups.
 
     Parameters:
         security_group_name (str): The name of the Security Group to modify.
@@ -32,7 +32,7 @@ def modify_security_group(security_group_name, region, cidr_blocks):
             # Revoke existing inbound HTTP rule for port 80 for each CIDR block
             for cidr in cidr_blocks:
                 http_rule_for_cidr_exists = any(
-                    rule['FromPort'] == 80 and rule['ToPort'] == 80 and
+                    rule['FromPort'] == 5000 and rule['ToPort'] == 5000 and
                     any(ip_range['CidrIp'] == cidr for ip_range in rule['IpRanges'])
                     for rule in sg['IpPermissions']
                 )
