@@ -29,7 +29,7 @@ def modify_security_group(security_group_name, region, cidr_blocks):
         for sg in response['SecurityGroups']:
             security_group_id = sg['GroupId']
 
-            # Revoke existing inbound HTTP rule for port 80 for each CIDR block
+            # Revoke existing inbound HTTP rule for port 5000 for each CIDR block
             for cidr in cidr_blocks:
                 http_rule_for_cidr_exists = any(
                     rule['FromPort'] == 5000 and rule['ToPort'] == 5000 and
@@ -42,12 +42,12 @@ def modify_security_group(security_group_name, region, cidr_blocks):
                         ec2.revoke_security_group_ingress(
                             GroupId=security_group_id,
                             IpPermissions=[
-                                {'IpProtocol': 'tcp', 'FromPort': 80, 'ToPort': 80, 'IpRanges': [{'CidrIp': cidr}]}
+                                {'IpProtocol': 'tcp', 'FromPort': 5000, 'ToPort': 5000, 'IpRanges': [{'CidrIp': cidr}]}
                             ]
                         )
-                        logging.info(f"Revoked inbound HTTP rule for port 80 for CIDR {cidr} in Security Group {security_group_name} (ID: {security_group_id}).")
+                        logging.info(f"Revoked inbound HTTP rule for port 5000 for CIDR {cidr} in Security Group {security_group_name} (ID: {security_group_id}).")
                     except ClientError as e:
-                        logging.warning(f"Failed to revoke inbound HTTP rule for port 80 for CIDR {cidr}: {e}")
+                        logging.warning(f"Failed to revoke inbound HTTP rule for port 5000 for CIDR {cidr}: {e}")
 
             # Revoke all existing outbound rules
             try:
