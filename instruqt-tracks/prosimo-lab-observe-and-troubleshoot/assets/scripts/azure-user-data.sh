@@ -28,4 +28,4 @@ EOT
 
 sudo chmod +x /home/linuxuser/run_script.sh
 sudo chown linuxuser:linuxuser /home/linuxuser/run_script.sh
-sudo /home/linuxuser/run_script.sh
+sudo /home/linuxuser/run_script.sh &
