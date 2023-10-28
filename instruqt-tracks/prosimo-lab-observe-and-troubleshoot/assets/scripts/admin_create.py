@@ -81,7 +81,7 @@ class UserCreator:
 
         response = self.session.post(request_url, json=payload)
 
-        if response.status_code == 201:
+        if response.status_code == 200:
             return {
                 'status': 'success',
                 'data': response.json()
