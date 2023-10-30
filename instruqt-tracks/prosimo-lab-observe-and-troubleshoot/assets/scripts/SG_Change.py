@@ -32,9 +32,9 @@ def modify_security_group(security_group_name, region, cidr_blocks):
             # Revoke existing inbound HTTP rule for port 5000 for each CIDR block
             for cidr in cidr_blocks:
                 http_rule_for_cidr_exists = any(
-                    rule['FromPort'] == 5000 and rule['ToPort'] == 5000 and
-                    any(ip_range['CidrIp'] == cidr for ip_range in rule['IpRanges'])
-                    for rule in sg['IpPermissions']
+                    rule.get('FromPort') == 5000 and rule.get('ToPort') == 5000 and
+                    any(ip_range['CidrIp'] == cidr for ip_range in rule.get('IpRanges', []))
+                    for rule in sg.get('IpPermissions', [])
                 )
 
                 if http_rule_for_cidr_exists:
@@ -83,7 +83,7 @@ if __name__ == "__main__":
         "10.1.0.0/24",
         "10.2.0.0/24",
         "10.3.0.0/24",
-        "10.5.0.0/24",
-        "10.6.0.0/24"
+        "10.4.0.0/24",
+        "10.5.0.0/24"
     ]
     modify_security_group(security_group_name, region, cidr_blocks)

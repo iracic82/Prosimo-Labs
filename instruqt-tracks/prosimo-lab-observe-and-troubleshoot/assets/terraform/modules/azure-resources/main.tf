@@ -106,8 +106,8 @@ resource "azurerm_network_security_rule" "allow_icmp" {
     "10.1.0.0/24",
     "10.2.0.0/24",
     "10.3.0.0/24",
+    "10.4.0.0/24",
     "10.5.0.0/24",
-    "10.6.0.0/24",
   ]
   destination_address_prefix  = "*"
   resource_group_name         = azurerm_resource_group.rg_iac.name
@@ -128,8 +128,8 @@ resource "azurerm_network_security_rule" "allow_tcp_5000" {
     "10.1.0.0/24",
     "10.2.0.0/24",
     "10.3.0.0/24",
+    "10.4.0.0/24",
     "10.5.0.0/24",
-    "10.6.0.0/24",
   ]
   destination_address_prefix  = "*"
   resource_group_name         = azurerm_resource_group.rg_iac.name
@@ -167,8 +167,8 @@ resource "azurerm_network_security_rule" "allow_udp_5201" {
     "10.1.0.0/24",
     "10.2.0.0/24",
     "10.3.0.0/24",
+    "10.4.0.0/24",
     "10.5.0.0/24",
-    "10.6.0.0/24",
   ]
   destination_address_prefix  = "*"
   resource_group_name         = azurerm_resource_group.rg_iac.name
@@ -189,8 +189,8 @@ resource "azurerm_network_security_rule" "allow_tcp_5201" {
     "10.1.0.0/24",
     "10.2.0.0/24",
     "10.3.0.0/24",
+    "10.4.0.0/24",
     "10.5.0.0/24",
-    "10.6.0.0/24",
   ]
   destination_address_prefix  = "*"
   resource_group_name         = azurerm_resource_group.rg_iac.name
