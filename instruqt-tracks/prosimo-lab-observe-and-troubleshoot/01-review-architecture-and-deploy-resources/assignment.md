@@ -139,13 +139,12 @@ You should see something like:
 ```
 python3 admin_create.py -e <YourBusinessEmail>
 {
-    "status": "failure",
-    "error": "HTTP 200: OK",
-    "details": {
+    "status": "success",
+    "data": {
         "statusCode": "E100000",
         "message": "Successful",
         "data": {
-            "id": "718146fd-95bf-4bb9-b0ec-0df5164fe39b"
+            "id": "56cacdd6-2e70-438b-999e-db081baa2ef0"
         }
     }
 }
