@@ -44,7 +44,7 @@ class ResourceCreator:
             logger.error(f"Failed to create resource at {api_endpoint}: {e}")
             return {'status': 'failure', 'error': str(e)}
 
-def load_configuration(file_path='config.yaml'):
+def load_configuration(file_path='/root/prosimo-lab/assets/scripts/config.yaml'):
     """
     Load the API configuration from a YAML file.
     """
