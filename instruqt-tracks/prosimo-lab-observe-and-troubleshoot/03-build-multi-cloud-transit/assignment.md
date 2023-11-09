@@ -66,7 +66,7 @@ Swith to the 'Prosimo' tab, and follow the steps below:
 6) Next click "Add VPCs" - bottom right corner. You should see a list of discovered VPCs and Subnets for this region appear in the right-hand pane.
 7) Click the checkbox next to the account name (top of the list) to automatically select all VPCs.
 8) Now click on the "Add VPC's" button
-9) Click on the "Dev" TGW
+9) Click on the "EU-TGW" TGW
 10) Click on the "2 VPCs" icon - a dashed orange line should appear between then two.
 11) Click "Save to Deployment"
 12) Click "Preview Deployment" - bottom right.
