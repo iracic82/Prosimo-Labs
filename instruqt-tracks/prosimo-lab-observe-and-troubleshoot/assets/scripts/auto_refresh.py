@@ -17,25 +17,6 @@ class AutoRefreshAPI:
         }
         self.session = requests.Session()
         self.session.headers.update(self.headers)
-
-    def diagnose_config(self):
-        endpoint_url = f"{self.base_url}/diagnose/cloudtrace/config/refresh"
-        response = self.session.get(endpoint_url)
-
-        if response.status_code == 200:
-            return json.loads(response.text)
-        else:
-            raise Exception(f"API call failed with status code {response.status_code}: {response.text}")
-
-    def refresh_network_discovery(self):
-        endpoint_url = f"{self.base_url}/network/discovery/refresh"
-        payload = json.dumps({})  # Empty payload
-        response = self.session.post(endpoint_url, data=payload)
-
-        if response.status_code == 200:
-            return json.loads(response.text)
-        else:
-            raise Exception(f"API call failed with status code {response.status_code}: {response.text}")
     def cloud_refresh(self):
         endpoint_url = f"{self.base_url}/datafetch"
         payload = json.dumps(
