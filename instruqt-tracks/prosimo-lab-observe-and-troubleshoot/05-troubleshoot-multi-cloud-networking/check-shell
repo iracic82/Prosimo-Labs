@@ -1,11 +1,61 @@
-#!/bin/sh
-#
-# This script runs when the platform check the challenge.
-#
-# The platform determines if the script was successful using the exit code of this
-# script. If the exit code is not 0, the script fails. 
-#
+#!/bin/bash
 
-echo "This is the check script"
+# Enable strict mode for script execution
+set -euo pipefail
 
-exit 0
+# Define constants
+REGION="us-east-1"
+SG_NAME="sc_allow_ssh"
+INSTANCE_NAME="WebServerProdUs1"
+
+# Fetch the Instance IDs for instances with name WebSvcsProdUs
+INSTANCE_IDS=$(aws ec2 describe-instances --region $REGION --filters "Name=tag:Name,Values=$INSTANCE_NAME" --query "Reservations[*].Instances[*].InstanceId" --output text)
+
+# Check if INSTANCE_IDS is empty
+if [ -z "$INSTANCE_IDS" ]; then
+    echo "No EC2 instance with name '$INSTANCE_NAME' found in region $REGION."
+    exit 1
+fi
+
+# Function to check outbound rules
+check_outbound_rules() {
+    local sg_id=$1
+    local outbound_rules=$(aws ec2 describe-security-groups --region $REGION --group-ids $sg_id --query "SecurityGroups[*].IpPermissionsEgress")
+
+    if echo $outbound_rules | grep -q '"IpProtocol": "-1"'; then
+        echo "Security Group with ID $sg_id allows all outbound traffic."
+        return 0
+    else
+        echo "Security Group with ID $sg_id does not allow all outbound traffic."
+        return 1
+    fi
+}
+
+# Main logic
+all_allow_outbound=true
+for instance_id in $INSTANCE_IDS; do
+    # Fetch associated SGs for each instance
+    SG_IDS=$(aws ec2 describe-instances --instance-ids $instance_id --region $REGION --query "Reservations[*].Instances[*].SecurityGroups[?GroupName=='$SG_NAME'].GroupId" --output text)
+
+    if [ -z "$SG_IDS" ]; then
+        echo "No Security Group with name '$SG_NAME' found for instance ID $instance_id."
+        all_allow_outbound=false
+        break # Break out of the loop
+    fi
+
+    for sg_id in $SG_IDS; do
+        if ! check_outbound_rules $sg_id; then
+            all_allow_outbound=false
+            break 2 # Break out of both loops
+        fi
+    done
+done
+
+if $all_allow_outbound; then
+    echo "Configuration is correct"
+    exit 0
+else
+    fail_message="FAIL: Connectivity test failed."
+    echo "$fail_message"
+
+fi

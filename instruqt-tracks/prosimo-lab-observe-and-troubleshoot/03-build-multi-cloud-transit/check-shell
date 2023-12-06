@@ -1,11 +1,69 @@
-#!/bin/sh
-#
-# This script runs when the platform check the challenge.
-#
-# The platform determines if the script was successful using the exit code of this
-# script. If the exit code is not 0, the script fails. 
-#
+#!/bin/bash
 
-echo "This is the check script"
+# Enable strict mode for script execution
+set -euo pipefail
 
-exit 0
+cd /root/prosimo-lab/assets/terraform/
+
+# Run terraform output command and store the output in a variable
+output=$(terraform output -json)
+
+# Initialize the fail_message variable as an empty string
+fail_message=""
+
+# Function to extract the first SSH command from the first region
+get_first_ssh_command() {
+    echo "$output" | jq -r '.ssh_access_aws_eu.value[0]' | grep "ssh -i"
+}
+
+# Define a list of IP addresses to test
+ips=("10.0.0.100" "10.1.0.100" "10.2.0.100" "10.3.0.100" "10.5.0.100")
+#ips=("10.4.0.100")
+
+# Generate a remote command to run ping tests
+generate_ping_test_command() {
+    local remote_commands=("connectivity_check=0;")
+    for ip in "${ips[@]}"; do
+        # Adding a ping command for each IP
+        remote_commands+=("ping -c 1 $ip &> /dev/null || connectivity_check=1;")
+    done
+    # Adding the final check and fail message
+    remote_commands+=("if [ \$connectivity_check -eq 0 ]; then echo 'SUCCESS: Connectivity OK'; else echo 'FAIL: Connectivity has not been built correctly'; fi")
+    # Joining all commands to run sequentially
+    echo "${remote_commands[*]}"
+}
+
+# Main execution
+# Checking if jq is installed
+if ! command -v jq &> /dev/null; then
+    echo "jq is not installed. Please install jq to parse the JSON output."
+    exit 1
+fi
+
+# Extracting the first SSH command
+ssh_command=$(get_first_ssh_command)
+
+# Check if an SSH command was found
+if [ -z "$ssh_command" ]; then
+    fail_message="FAIL: Terraform deployment failed - not all resources have been deployed."
+fi
+
+# Modify the SSH command to automatically accept host key and run ping tests
+ping_test_command=$(generate_ping_test_command)
+ssh_command=$(echo $ssh_command | awk -F '=> ' '{print $2}' | sed "s/ssh /ssh -o StrictHostKeyChecking=no /")
+full_command="$ssh_command '$ping_test_command'"
+
+# Executing the SSH command with ping tests
+echo "Executing SSH and running ping tests..."
+eval "$full_command"
+result=$?
+
+# Check the result of the SSH command
+if [ $result -eq 0 ]; then
+    echo "SSH and ping test executed successfully."
+    exit 0
+else
+    fail_message="FAIL: Connectivity test failed."
+    echo "$fail_message"
+    exit $result
+fi
