@@ -41,7 +41,7 @@ resource "aws_subnet" "subnet1" {
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.vpc1.id
   tags = {
-    "Name" = "igw_vpc_1"
+    "Name" = var.igw_name
   }
 }
 
@@ -49,7 +49,7 @@ resource "aws_internet_gateway" "igw" {
 resource "aws_route_table" "rt_vpc1" {
   vpc_id = aws_vpc.vpc1.id
   tags = {
-    "Name" = "rt_vpc_1"
+    "Name" = var.rt_name
   }
 }
 
