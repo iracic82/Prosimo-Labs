@@ -11,6 +11,8 @@ module "aws__instances_eu" {
   aws_region            = var.aws_region[0]
   aws_vpc_name          = each.value["aws_vpc_name"]
   aws_subnet_name       = each.value["aws_subnet_name"]
+  rt_name               = each.value["rt_name"]
+  igw_name              = each.value["igw_name"]
   private_ip            = each.value["private_ip"]
   tgw                   = "false"
   aws_ec2_name          = each.value["aws_ec2_name"]
@@ -30,6 +32,8 @@ module "aws__instances_us" {
   aws_region            = var.aws_region[1]
   aws_vpc_name          = each.value["aws_vpc_name"]
   aws_subnet_name       = each.value["aws_subnet_name"]
+  rt_name               = each.value["rt_name"]
+  igw_name              = each.value["igw_name"]
   private_ip            = each.value["private_ip"]
   tgw                   = "false"
   aws_ec2_name          = each.value["aws_ec2_name"]
