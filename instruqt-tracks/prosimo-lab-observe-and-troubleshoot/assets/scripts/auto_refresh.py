@@ -27,7 +27,7 @@ class AutoRefreshAPI:
                     f"{self.aws_account}"
                 ],
                 "regions": [
-                    "us-west-1",
+                    "eu-west-1",
                     "us-east-1"
                 ]
                 },
