@@ -2,6 +2,7 @@
 
 # Create EC2 and Networking Infrastructure in AWS
 
+/*
 module "aws__instances_eu" {
   source = "./modules/aws-resources"
   providers         = {   
@@ -22,6 +23,7 @@ module "aws__instances_eu" {
   aws_subnet_cidr = each.value["aws_subnet_cidr"]
  
 }
+*/
 
 module "aws__instances_us" {
   source = "./modules/aws-resources"
@@ -97,6 +99,7 @@ resource "prosimo_cloud_creds" "azure" {
 
 # Create Prosimo Infra resources in AWS
 
+/*
 module "prosimo_resource_aws_eu" {
   source     = "./modules/prosimo-resources"
   prosimo_teamName = var.prosimo_teamName
@@ -109,7 +112,7 @@ module "prosimo_resource_aws_eu" {
   wait = "false"
 
 }
-
+*/
 
 module "prosimo_resource_aws_us" {
   source     = "./modules/prosimo-resources"
@@ -156,10 +159,10 @@ module "prosimo_resource_azure" {
 }
 
 resource "aws_ec2_transit_gateway" "dev" {
-provider = aws.eu-aws
-description = "EU-TGW"
+provider = aws.us-east-1
+description = "US-TGW"
 tags = {
-    Name = "EU-TGW"
+    Name = "US-TGW"
   }
 }
 

@@ -74,6 +74,7 @@ variable "US_East_FrontEnd" {
     aws_vpc_name                = string
     igw_name                    = string
     rt_name                     = string
+    namespace                   = string
     aws_subnet_name             = string
     private_ip                  = string
     aws_ec2_name                = string
@@ -88,6 +89,7 @@ variable "EU_West_FrontEnd" {
     aws_vpc_name                = string
     igw_name                    = string
     rt_name                     = string
+    namespace                   = string
     aws_subnet_name             = string
     private_ip                  = string
     aws_ec2_name                = string
@@ -104,6 +106,7 @@ variable "North_EU_AppSvcs_VNets" {
     azure_vnet_name             = string
     azure_subnet_name           = string
     azure_instance_name         = string
+    namespace                   = string
     azure_server_key_pair_name  = string
     azure_private_ip            = string
     azure_vm_size               = string
