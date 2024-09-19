@@ -69,7 +69,7 @@ variable "license_type" {
 // instance architect
 // Either arm or x86
 variable "arch" {
-  default = "arm"
+  default = "x86"
 }
 
 // instance type needs to match the architect
@@ -309,7 +309,7 @@ variable "fgtami" {
 
 //  Existing SSH Key on the AWS
 variable "keyname" {
-  default = "qing-key"
+  default = "US_EAST_WebSvcsProd"
 }
 
 //  Admin HTTPS access port
