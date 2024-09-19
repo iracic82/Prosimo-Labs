@@ -6,7 +6,7 @@ sudo systemctl start docker
 sudo systemctl enable docker
 sudo groupadd docker
 sudo usermod -aG docker linuxuser
-sudo curl https://igor-prosimo.s3.eu-west-1.amazonaws.com/network_testing.py -o /home/linuxuser/network_testing.py
+sudo curl https://igor-prosimo.s3.eu-west-1.amazonaws.com/security_testing.py -o /home/linuxuser/security_testing.py
 sudo docker pull iracic82/prosimo-security-api:latest
 sudo docker pull iracic82/prosimo-iperf3:latest
 sudo docker run -d -p 5000:5000 iracic82/prosimo-security-api:latest
@@ -19,7 +19,7 @@ cat <<"EOT" > /home/linuxuser/run_script.sh
 
 while true; do
     # Call your Python script here
-    python3 /home/linuxuser/network_testing.py
+    python3 /home/linuxuser/security_testing.py
 
     # Sleep for 3 minutes (180 seconds)
     sleep 180

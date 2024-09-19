@@ -2,12 +2,13 @@
 sudo yum update -y
 sudo yum install -y docker
 sudo yum install -y iperf3
+sudo yum install -y jq
 sudo pip3 install requests
 sudo pip3 install urllib3==1.26.15
 sudo pip3 install openai
 sudo service docker start
 sudo usermod -a -G docker ec2-user
-sudo curl https://igor-prosimo.s3.eu-west-1.amazonaws.com/network_testing.py -o /home/ec2-user/network_testing.py
+sudo curl https://igor-prosimo.s3.eu-west-1.amazonaws.com/security_testing.py -o /home/ec2-user/security_testing.py
 sudo docker pull iracic82/prosimo-security-api:latest
 sudo docker pull iracic82/prosimo-iperf3:latest
 sudo docker run -d -p 5000:5000 iracic82/prosimo-security-api:latest
@@ -18,7 +19,7 @@ cat <<"EOT" > /home/ec2-user/run_script.sh
 
 while true; do
     # Call your Python script here
-    python3 /home/ec2-user/network_testing.py
+    python3 /home/ec2-user/security_testing.py
 
     # Sleep for 3 minutes (180 seconds)
     sleep 180
