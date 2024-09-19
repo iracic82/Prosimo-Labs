@@ -179,7 +179,13 @@ resource "tls_private_key" "demo_key" {
   rsa_bits  = 4096
 }
 
+resource "aws_key_pair" "demo_key_pair" {
+  key_name   = var.aws_ec2_key_pair_name
+  public_key = tls_private_key.demo_key.public_key_openssh
+}
+
 # Create a Key Pair and Download
+/*
 resource "aws_key_pair" "demo_key_pair" {
   key_name   = var.aws_ec2_key_pair_name
   public_key = tls_private_key.demo_key.public_key_openssh
@@ -188,7 +194,7 @@ resource "aws_key_pair" "demo_key_pair" {
     command = "echo '${tls_private_key.demo_key.private_key_pem}' > ./${var.aws_ec2_key_pair_name}.pem"
   }
 }
-
+*/
 resource "local_sensitive_file" "private_key_pem" {
   content         = tls_private_key.demo_key.private_key_pem
   filename        = "./${var.aws_ec2_key_pair_name}.pem"
