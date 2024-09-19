@@ -78,10 +78,11 @@ resource "aws_network_interface" "eth1" {
 
 #Create a TGW conditionally
 resource "aws_ec2_transit_gateway" "tgw_demo" {
-count = var.tgw ? 1 : 0 
-description = "Lab-TGW"
+  count       = var.tgw ? 1 : 0
+  description = "Lab-TGW"
   tags = {
     Name = "Lab-TGW"
+  }
 }
 
 

@@ -2,7 +2,7 @@
 
 # Create EC2 and Networking Infrastructure in AWS
 
-/*
+
 module "aws__instances_eu" {
   source = "./modules/aws-resources"
   providers         = {   
@@ -23,7 +23,7 @@ module "aws__instances_eu" {
   aws_subnet_cidr = each.value["aws_subnet_cidr"]
  
 }
-*/
+
 
 module "aws__instances_us" {
   source = "./modules/aws-resources"
