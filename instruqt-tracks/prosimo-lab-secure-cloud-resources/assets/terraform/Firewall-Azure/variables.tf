@@ -1,15 +1,3 @@
- 
-variable "rg" {
-  type = string
-  default = "Lab-Firewall-RG"
-}
-
-
-variable "location" {
-  type = string 
-  default = "North Europe"
-}
-
 variable subscription {
   type = string
   description = "azure subscription id"
