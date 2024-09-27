@@ -1,4 +1,3 @@
-
 from azure.identity import ClientSecretCredential
 from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.network import NetworkManagementClient
@@ -8,7 +7,7 @@ import os
 # Replace with your subscription ID
 subscription_id = os.environ.get("INSTRUQT_AZURE_SUBSCRIPTION_PROSIMO_TENANT_SUBSCRIPTION_ID")
 
-# Authenticate using DefaultAzureCredential
+# Authenticate using ClientSecretCredential
 credential = ClientSecretCredential(
     client_id=os.getenv("INSTRUQT_AZURE_SUBSCRIPTION_PROSIMO_TENANT_SPN_ID"),
     tenant_id=os.getenv("INSTRUQT_AZURE_SUBSCRIPTION_PROSIMO_TENANT_TENANT_ID"),
@@ -40,10 +39,17 @@ except Exception as e:
 try:
     resource_groups = resource_client.resource_groups.list()
 
-    # New route to add
-    new_route = Route(
-        name='retunTraffic',
+    # New routes to add
+    new_route_1 = Route(
+        name='returnTraffic_10_0',  # Unique name for the first route
         address_prefix='10.0.0.100/32',
+        next_hop_type='VirtualAppliance',
+        next_hop_ip_address=nexthopip
+    )
+
+    new_route_2 = Route(
+        name='forwardTraffic_10_2',  # Unique name for the second route
+        address_prefix='10.2.0.100/32',
         next_hop_type='VirtualAppliance',
         next_hop_ip_address=nexthopip
     )
@@ -63,14 +69,23 @@ try:
                     print(f" - Route Name: {route.name}, Next Hop Type: {route.next_hop_ip_address}")
                     route.next_hop_ip_address = "10.160.1.4"
 
-                # Apply route table updates
-                poller = network_client.route_tables.begin_create_or_update(conn_rg, route_table.name, route_table)
-                poller.result()  # Wait for completion
+                # Apply the first route
+                try:
+                    print(f"Adding route: {new_route_1.name}")
+                    poller = network_client.routes.begin_create_or_update(conn_rg, route_table.name, new_route_1.name, new_route_1)
+                    poller.result()  # Wait for completion
+                    print(f"Route {new_route_1.name} added successfully.")
+                except Exception as e:
+                    print(f"Error adding {new_route_1.name}: {e}")
 
-                # Add the new route
-                route_table.routes.append(new_route)
-                poller = network_client.routes.begin_create_or_update(conn_rg, route_table.name, new_route.name, new_route)
-                poller.result()  # Wait for completion
+                # Apply the second route
+                try:
+                    print(f"Adding route: {new_route_2.name}")
+                    poller = network_client.routes.begin_create_or_update(conn_rg, route_table.name, new_route_2.name, new_route_2)
+                    poller.result()  # Wait for completion
+                    print(f"Route {new_route_2.name} added successfully.")
+                except Exception as e:
+                    print(f"Error adding {new_route_2.name}: {e}")
 
 except Exception as e:
     print(f"Error updating route table: {e}")
