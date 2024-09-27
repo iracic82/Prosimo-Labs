@@ -1,4 +1,5 @@
-from azure.identity import DefaultAzureCredential
+
+from azure.identity import ClientSecretCredential
 from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.network import NetworkManagementClient
 from azure.mgmt.network.models import Route
@@ -8,7 +9,11 @@ import os
 subscription_id = os.environ.get("INSTRUQT_AZURE_SUBSCRIPTION_PROSIMO_TENANT_SUBSCRIPTION_ID")
 
 # Authenticate using DefaultAzureCredential
-credential = DefaultAzureCredential()
+credential = ClientSecretCredential(
+    client_id=os.getenv("INSTRUQT_AZURE_SUBSCRIPTION_PROSIMO_TENANT_SPN_ID"),
+    tenant_id=os.getenv("INSTRUQT_AZURE_SUBSCRIPTION_PROSIMO_TENANT_TENANT_ID"),
+    client_secret=os.getenv("INSTRUQT_AZURE_SUBSCRIPTION_PROSIMO_TENANT_SPN_PASSWORD")
+)
 
 # Resource Management Client
 resource_client = ResourceManagementClient(credential, subscription_id)
