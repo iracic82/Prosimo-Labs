@@ -97,15 +97,6 @@ In instruqt, lower-level headings are not visually distinct enough.  Recommend u
 #### HTML Elements
 You can write html with your Markdown and use inline css to make sections of your text visually distinct.
 
-Here is an example of a piece of text that is called out with custom styling:
-
-```html
-<div style="border: 1px solid black; border-radius: 5px; padding-left: 1em; padding-bottom: 1em; background-color: lightgray; color: black; border-radius: 5px;">
-  <h3 style="color: black; border-radius: 5px;">🎉 One of the microservices can produce OpenTelemetry traces</h3>
-  The traces are just going to the console for now, but the basic set up is complete and you did not have to touch the main application code.
-</div>
-```
-
 Note that Markdown won't work inside html.
 
 You can also use a "collapse" to hide nonessential information:
@@ -149,36 +140,14 @@ The `PATH` variable was set by running `echo $PATH` while logged in to the instr
 ## Tabs
 
 ### Clarity
-Make **REALLY** sure the user knows what tab they should be working in.  I used the following HTML snippet to force a tab change:
-
-```html
-<div style="border: 1px solid black; border-radius: 5px; padding-left: 1em; padding-bottom: 1em; background-color: lightgray; color: black; border-radius: 5px;">
-  <h3 style="color: black; border-radius: 5px;">✅ Use Tab: <strong>messenger</strong></h3>
-</div>
-```
-
-It looks like this:
-<div style="border: 1px solid black; border-radius: 5px; padding-left: 1em; padding-bottom: 1em; background-color: lightgray; color: black; border-radius: 5px;">
-  <h3 style="color: black; border-radius: 5px;">✅ Use Tab: <strong>messenger</strong></h3>
-</div>
-
-### Webapps
-You can define a tab for something that will come up later.  It'll just load once it's up.
-```
-tabs:
-- title: Jaeger
-  type: service
-  hostname: labserver
-  path: /
-  port: 16686
-```
+Make **REALLY** sure the user knows what tab they should be working in. 
 
 ### Ordering
 Try to order the tabs in the order they are initially referenced in the instructions. If there are multiple challenges, try to keep the order the same.
 
 
 ## Collaboration
-I didn't have time to build out a whole git-based workflow.  But ideally it would work like this:
+I didn't have time to build out a whole git-based workflow partially it's there.  But ideally it would work like this:
 * Merge to `main` does an `instruqt track push --force` to the main track
 * Changes are done in PRs and autopush to a track that has the same name as the branch
 * No one uses the UI under pain of death
@@ -193,35 +162,6 @@ In the absence of this process, or if you have a collaborator who can only use t
 	* If all looks well, you can pull with force from `my-branch` and commit it
 	* If there are changes, apply them manually or commit them then merge `track-remote` into `my-branch` using your preferrence merge strategy
 
-
-## Code Editor
-If using `code-server`, throw this in your track-level setup script.  This assumes your user is `labuser` so you'll need to change that:
-
-```bash
-mkdir -p /home/labuser/code-server/User
-cat > /home/labuser/code-server/User/settings.json <<-EOF
-{
-    "workbench.colorTheme": "Default Dark+",
-    "workbench.startupEditor": "none",
-    "security.workspace.trust.enabled": false,
-    "security.workspace.trust.banner": "never",
-    "security.workspace.trust.startupPrompt": "never",
-    "security.workspace.trust.untrustedFiles": "open",
-}
-EOF
-
-cat > /home/labuser/code-server/coder.json <<-EOF
-{
-  "query": {
-    "folder": "/home/labuser/microservices-march"
-  },
-  "update": {
-    "checked": 1665349162360,
-    "version": "4.7.1"
-  }
-}
-EOF
-```
 
 ## Other Notes
 * Do as much busywork up front. For example, if you are having the user build a docker image in the challenge, pull the base image in the track setup.  Make sure you use specific versions instead of `latest`. 
