@@ -9,6 +9,7 @@ sudo pip3 install openai
 sudo service docker start
 sudo usermod -a -G docker ec2-user
 sudo curl https://igor-prosimo.s3.eu-west-1.amazonaws.com/security_testing.py -o /home/ec2-user/security_testing.py
+sudo curl https://igor-prosimo.s3.eu-west-1.amazonaws.com/internet_test.py -o /home/ec2-user/internet_test.py
 sudo docker pull iracic82/prosimo-security-api:latest
 sudo docker pull iracic82/prosimo-iperf3:latest
 sudo docker run -d -p 5000:5000 iracic82/prosimo-security-api:latest
