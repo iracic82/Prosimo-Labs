@@ -217,3 +217,56 @@ module "azure_instances_1" {
   azure_vnet_cidr   = "10.0.0.0/24"
 }
 */
+# Build MCN transit setup
+resource "prosimo_visual_transit" "us-east" {
+  transit_input {
+    cloud_type   = "AWS"
+    cloud_region = var.aws_region[1]
+
+    transit_deployment {
+      tgws {
+        name   = aws_ec2_transit_gateway.dev.id
+        action = "MOD"
+
+        connection {
+          type   = "EDGE"
+          action = "ADD"
+        }
+
+        dynamic "connection" {
+          for_each = var.US_East_FrontEnd
+
+          content {
+            type   = "VPC"
+            action = "ADD"
+            name   = connection.value.aws_vpc_name
+          }
+        }
+      }
+    }
+  }
+
+  deploy_transit_setup = true
+  depends_on = [aws_ec2_transit_gateway.dev]
+}
+
+
+resource "prosimo_visual_transit" "eu_north"{
+ transit_input {
+    cloud_type   = "AZURE"
+    cloud_region = "northeurope"
+    transit_deployment {
+        dynamic "vnets" {
+		    for_each = var.North_EU_AppSvcs_VNets
+
+            content {
+  			action = "ADD"
+  			name   = vnets.value.azure_vnet_name
+            }
+		}
+
+    }
+ }
+ deploy_transit_setup = true
+
+}
